@@ -1,1 +1,1 @@
-getgenv().Save["MMBunicode"] = "0872663716352" ---key is 0872663716352---
+_G.MMBunicode = "0872663716352" ---key is 0872663716352---
