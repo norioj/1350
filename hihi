@@ -1,0 +1,708 @@
+local Library = {}
+
+function Library:Init(InitData)
+    local IF = {TabCount = 0}
+
+    local UI = game:GetObjects("rbxassetid://11344255402")[1]
+
+    local Interface = UI["UI"]
+
+    if syn then
+        syn.protect_gui(Interface)
+        Interface.Parent = game:GetService("CoreGui")
+    elseif gethui then
+        Interface.Parent = gethui()
+    else
+        Interface.Parent = game:GetService("CoreGui")
+    end
+    
+    local Ids = {
+        "rbxthumb://id=6031471479&type=Asset&w=420&h=420",
+        "rbxthumb://id=6031471483&type=Asset&w=420&h=420",
+    }
+    local Temp = {}
+    
+    for _, Id in ipairs(Ids) do
+        local Decal = Instance.new("Decal", workspace)
+        Decal.Texture = Id
+        Temp[#Temp + 1] = Decal
+    end
+    
+    game:GetService("ContentProvider"):PreloadAsync(Temp)
+    
+    for _, Decal in ipairs(Temp) do
+        Decal:Destroy()
+    end
+
+    local MainContainer = Interface["_"]
+
+    local function Drag(Frame, Speed)
+        local Dragging;
+        local DragStart;
+        local FrameStart;
+        local DragInput;
+        local DragSpeed = Speed
+        
+        local function Update(Input)
+            local Delta = Input.Position - DragStart
+            local NewPosition = UDim2.new(FrameStart.X.Scale, FrameStart.X.Offset + Delta.X, FrameStart.Y.Scale, FrameStart.Y.Offset + Delta.Y)
+            
+            game:GetService("TweenService"):Create(Frame, TweenInfo.new(DragSpeed, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Position = NewPosition}):Play()
+        end
+        
+        Frame.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType["MouseButton1"] then
+                Dragging = true
+                DragStart = Input.Position
+                FrameStart = Frame.Position
+                
+                Input.Changed:Connect(function()
+                    if Input.UserInputState == Enum.UserInputState["End"] then
+                        Dragging = false
+                    end
+                end)
+            end
+        end)
+        
+        Frame.InputChanged:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType["MouseMovement"] then
+                DragInput = Input
+            end
+        end)
+        
+        game:GetService("UserInputService").InputChanged:Connect(function(Input)
+            if Input == DragInput and Dragging then
+                Update(Input)
+            end
+        end)
+    end
+
+    Drag(MainContainer, 0.3)
+
+    local Main = MainContainer["Main"]
+    local Keybind = Enum.KeyCode["LeftControl"]
+
+    if InitData then
+        if InitData["WindowName"] then
+            Main["Title"].Text = InitData["WindowName"]
+        else
+            Main["Title"].Text = "Script"
+        end
+        if InitData["Keybind"] then
+            Keybind = Enum.KeyCode[(type(InitData["Keybind"]) == "userdata" and InitData["Keybind"].Name) or (type(InitData["Keybind"]) == "string" and InitData["Keybind"])]
+        end
+        if InitData["Advertisement"] then
+            local __ = Instance.new("Frame")
+
+            __.Name = ""
+            __.Parent = Interface
+            __.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            __.BackgroundTransparency = 1.000
+            __.BorderSizePixel = 0
+            __.Size = UDim2.new(1, 0, 1, 0)
+            __.ZIndex = -1
+
+            for I = 0, 3 do
+                local ___ = Instance.new("TextLabel")
+                ___.Name = ""
+                ___.Parent = __
+                ___.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                ___.BackgroundTransparency = 1.000
+                ___.BorderSizePixel = 0
+                ___.Position = UDim2.new(0, 0, 0.25 * I, 0)
+                ___.Size = UDim2.new(1, 0, 0.25, 0)
+                ___.Font = Enum.Font.GothamBold
+                ___.Text = "Buy Macro V2 Premium!   Buy Macro V2 Premium!"
+                ___.TextColor3 = Color3.fromRGB(255, 255, 255)
+                ___.TextSize = 70.000
+                ___.TextWrapped = true
+            end
+        end
+    end
+
+    game:GetService("UserInputService").InputBegan:Connect(function(Input, GPE)
+        if Input.KeyCode == Keybind and not GPE then
+            Interface.Enabled = not Interface.Enabled
+        end
+    end)
+
+    Main["Tabs"].CanvasSize = UDim2.new(0, Main["Tabs"]:FindFirstChild("UIListLayout").AbsoluteContentSize.X + 250, 0, 0)
+
+    Main["Tabs"]:FindFirstChild("UIListLayout"):GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Main["Tabs"].CanvasSize = UDim2.new(0, Main["Tabs"]:FindFirstChild("UIListLayout").AbsoluteContentSize.X + (Main["Tabs"]:FindFirstChild("UIPadding").PaddingLeft.Offset * 2), 0, 0)
+    end)
+    
+    local Mode = false
+        
+    function MainInverse(CV)
+        return Color3.new(
+            (1 - CV.R) + 0.1,
+            (1 - CV.G) + 0.1,
+            (1 - CV.B) + 0.1
+        )
+    end
+
+    function SecondaryInverse(CV)
+        return Color3.new(
+            1 - CV.R,
+            1 - CV.G,
+            1 - CV.B
+        )
+    end
+        
+    function Theme()
+        Main.BackgroundColor3 = MainInverse(Main.BackgroundColor3)
+    
+    	for _, Object in ipairs(Main:GetDescendants()) do
+    		if Object:IsA("Frame") then
+    			Object.BackgroundColor3 = MainInverse(Object.BackgroundColor3)
+    		end
+    		if Object:IsA("ScrollingFrame") then
+    			Object.ScrollBarImageColor3 = SecondaryInverse(Object.ScrollBarImageColor3)
+    		end
+    		if (Object:IsA("TextButton") or Object:IsA("TextLabel")) and Object.Name ~= "ToggleButton" then
+    			Object.BackgroundColor3 = MainInverse(Object.BackgroundColor3)
+    			Object.TextColor3 = SecondaryInverse(Object.TextColor3)
+    		end
+            if Object:IsA("TextBox") then
+    			Object.BackgroundColor3 = MainInverse(Object.BackgroundColor3)
+    			Object.TextColor3 = SecondaryInverse(Object.TextColor3)
+                Object.PlaceholderColor3 = SecondaryInverse(Object.PlaceholderColor3)
+            end
+    		if Object:IsA("ImageButton") or Object:IsA("ImageLabel") then
+    			Object.BackgroundColor3 = MainInverse(Object.BackgroundColor3)
+    			Object.ImageColor3 = SecondaryInverse(Object.ImageColor3)
+    		end
+    		if Object:IsA("UIStroke") then
+    			Object.Color = MainInverse(Object.Color)
+    		end
+    	end
+    
+    	if Mode then
+    		Main["Mode"].Image = "rbxthumb://id=6031471483&type=Asset&w=420&h=420"
+    	end
+    	if not Mode then
+    		Main["Mode"].Image = "rbxthumb://id=6031471479&type=Asset&w=420&h=420"
+    	end
+    end
+    
+    Main["Mode"].MouseButton1Click:Connect(function()
+        Mode = not Mode
+        Theme()
+    end)
+
+    function IF:Tab(Name)
+        local TF = {}
+
+        local Tab = UI["Tab"]:Clone()
+        Tab.Parent = Main["Tabs"]
+        Tab.Name = Name
+        Tab.Text = Name
+        
+        IF["TabCount"] += 1
+
+        local Container = UI["Container"]:Clone()
+        Container.Parent = Main["Containers"]
+        Container.Visible = (IF["TabCount"] <= 1)
+        
+        Tab.MouseButton1Click:Connect(function()
+            for _, Frame in ipairs(Main["Containers"]:GetChildren()) do
+                Frame.Visible = false
+            end
+            Container.Visible = true
+        end)
+
+        local LS = Container["LeftSide"]
+        local RS = Container["RightSide"]
+
+        function GetSide()
+            if LS:FindFirstChild("UIListLayout").AbsoluteContentSize.Y <= RS:FindFirstChild("UIListLayout").AbsoluteContentSize.Y then
+                return LS
+            else
+                return RS
+            end
+        end
+
+        function TF:Section(Name)
+            local SF = {}
+            
+            local Section = UI["Section"]:Clone()
+            Section.Parent = GetSide()
+
+            Section.Size = UDim2.new(0.99, 0, 0, Section:FindFirstChild("UIListLayout").AbsoluteContentSize.Y + Section:FindFirstChild("UIListLayout").Padding.Offset)
+
+            Section:FindFirstChild("UIListLayout"):GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                Section.Size = UDim2.new(0.99, 0, 0, Section:FindFirstChild("UIListLayout").AbsoluteContentSize.Y + Section:FindFirstChild("UIListLayout").Padding.Offset)
+            end)
+            
+            Section["SectionTitle"]["SectionTitleText"]:GetPropertyChangedSignal("Text"):Connect(function()
+                Section["SectionTitle"]["SectionTitleText"].Size = UDim2.new(Section["SectionTitle"]["SectionTitleText"].Size.X.Scale, Section["SectionTitle"]["SectionTitleText"].TextBounds.X + 4, Section["SectionTitle"]["SectionTitleText"].Size.Y.Scale, Section["SectionTitle"]["SectionTitleText"].Size.Y.Offset)
+            end)
+            
+            Section["SectionTitle"]["SectionTitleText"].Text = Name
+
+            local TooltipEnabled = false
+
+            function Tooltip(Text)
+                if not Text then
+                    Text = ""
+                end
+
+                local Info = Main["Info"]
+
+                local InfoFrame = Info["InfoFrame"]
+                local Shadow = Info["Shadow"]
+                local InfoText = InfoFrame["InfoText"]
+                local UISTR = InfoFrame["UIStroke"]
+
+                local function Tween(Object, TweenInfo, Properties)
+                    return game:GetService("TweenService"):Create(Object, TweenInfo, Properties):Play()
+                end
+
+                local TweenInfoA = TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"])
+                local TweenInfoB = TweenInfo.new(0.2)
+
+                local IFSX = InfoFrame.Size.X
+                local IFSY = InfoFrame.Size.Y
+
+                if TooltipEnabled then
+                    Tween(InfoFrame, TweenInfoA, {Size = UDim2.new(0, IFSX.Offset, 0, IFSY.Offset)})
+                    Tween(Shadow, TweenInfoB, {ImageTransparency = 0.7})
+                    Tween(InfoText, TweenInfoB, {TextTransparency = 0})
+                    Tween(UISTR, TweenInfoB, {Transparency = 0})
+                    
+                    InfoText.Text = Text
+                else
+                    Tween(InfoFrame, TweenInfoA, {Size = UDim2.new(-0.05, IFSX.Offset, -0.02, IFSY.Offset)})
+                    Tween(Shadow, TweenInfoB, {ImageTransparency = 1})
+                    Tween(InfoText, TweenInfoB, {TextTransparency = 1})
+                    Tween(UISTR, TweenInfoB, {Transparency = 1})
+                    
+                    InfoText.Text = ""
+                end
+            end
+            local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 50, 0, 50)
+textButton.Position = UDim2.new(0.2, 0, 0.5, 0)
+textButton.AnchorPoint = Vector2.new(0.5, 0.5)
+textButton.BackgroundTransparency = 1
+textButton.Text = ""
+textButton.Parent = Reduisceen
+
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(1, 0, 1, 0)
+imageLabel.Position = UDim2.new(0, 0, 0, 0)
+imageLabel.Image = "rbxassetid://UwU"
+imageLabel.Parent = textButton
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.Position = UDim2.new(0, 0, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Close"
+textLabel.Parent = imageLabel
+
+textButton.MouseButton1Click:Connect(function()
+    if textLabel.Text == "Close" then
+        textLabel.Text = "Open"
+    else
+        textLabel.Text = "Close"
+    end
+    game.CoreGui["redui"]["MainSceen"].Visible = not game.CoreGui["redui"]["MainSceen"].Visible
+end)
+            function SF:Label(Text)
+                local LBF = {}
+
+                local Label = UI["Paragraph"]:Clone()
+                Label.Parent = Section
+
+                Label["ParagraphText"].TextWrapped = true
+                Label["ParagraphText"].TextYAlignment = Enum.TextYAlignment.Center
+
+                Label["ParagraphText"]:GetPropertyChangedSignal("Text"):Connect(function()
+                    local X = Label.Size.X
+                    local Y = Label.Size.Y
+
+                    Label.Size = UDim2.new(X.Scale, X.Offset, Y.Scale, math.max(25, Label["ParagraphText"].TextBounds.Y + 14))
+                    Label["ParagraphText"].Size  = UDim2.new(X.Scale, X.Offset, Y.Scale, math.max(25, Label["ParagraphText"].TextBounds.Y + 20))
+                end)
+
+                Label["ParagraphText"].Text = Text
+
+                function LBF:Set(Text)
+                    Label["ParagraphText"].Text = Text
+                end
+
+                function LBF:Tooltip(Text)
+                    Label.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Label.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return LBF
+            end
+            
+            function SF:Button(Name, Callback)
+                local BF = {}
+
+                local Button = UI["Button"]:Clone()
+                Button.Parent = Section
+                Button.Name = Name
+                Button.Text = Name
+                
+                Button.MouseButton1Click:Connect(function()
+                    Callback()
+                end)
+
+                function BF:Tooltip(Text)
+                    Button.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Button.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return BF
+            end
+
+            function SF:Box(Name, PlaceholderText, Callback)
+                local BXF = {Tag = "Box"}
+
+                local Box = UI["Box"]:Clone()
+                Box.Parent = Section
+                Box.Name = Name
+                Box["BoxText"].Text = Name
+                Box["BoxInput"].PlaceholderText = PlaceholderText
+
+                Box["BoxInput"].FocusLost:Connect(function(EP)
+                    if EP then
+                        pcall(Callback, Box["BoxInput"].Text)
+                        Box["BoxInput"].Text = ""
+                    end
+                end)
+
+                function BXF:Get()
+                    return Box["BoxInput"].Text
+                end
+
+                function BXF:Set(Text)
+                    Box["BoxInput"].Text = Text
+                end
+
+                function BXF:Tooltip(Text)
+                    Box.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Box.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return BXF
+            end
+
+            function SF:Toggle(Name, Callback, Options)
+                local TGF = {Tag = "Toggle"}
+
+                local ToggleEnabled = false
+
+                if Options then
+                    if Options.Enabled then
+                        ToggleEnabled = Options.Enabled
+                    end
+                end
+
+                local Toggle = UI["Toggle"]:Clone()
+                Toggle.Parent = Section
+                Toggle.Name = Name
+                Toggle["ToggleText"].Text = Name
+
+                local function ToggleColor(Value)
+                    if Value then
+                        game:GetService("TweenService"):Create(Toggle["ToggleButton"], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 255, 180)}):Play()
+                    else
+                        game:GetService("TweenService"):Create(Toggle["ToggleButton"], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 180, 180)}):Play()
+                    end
+                end
+
+                ToggleColor(ToggleEnabled)
+
+                Toggle["ToggleButton"].MouseButton1Click:Connect(function()
+                    ToggleEnabled = not ToggleEnabled
+                    ToggleColor(ToggleEnabled)
+                    Callback(ToggleEnabled)
+                end)
+
+                function TGF:Get()
+                    return ToggleEnabled
+                end
+
+                function TGF:Set(Value)
+                    ToggleEnabled = Value
+                    ToggleColor(ToggleEnabled)
+                    Callback(ToggleEnabled)
+                end
+
+                function TGF:Tooltip(Text)
+                    Toggle.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Toggle.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return TGF
+            end
+
+            function SF:Slider(Name, Callback, Options)
+                local SLF = {Tag = "Slider"}
+
+                local Default, Min, Max, Precise = 0, 0, 1, false
+
+                if Options.Default then
+                    Default = Options.Default
+                end
+                if Options.Min or Options.Minimum then
+                    Min = ((Options.Min ~= nil and Options.Min) or (Options.Minimum ~= nil and Options.Minimum))
+                end
+                if Options.Max or Options.Maximum then
+                    Max = ((Options.Max ~= nil and Options.Max) or (Options.Maximum ~= nil and Options.Maximum))
+                end
+                if Options.Precise then
+                    Precise = Options.Precise
+                end
+
+                local Slider = UI["Slider"]:Clone()
+                Slider.Parent = Section
+                Slider.Name = Name
+                Slider["SliderText"].Text = Name
+
+                local SliderEnabled = false
+
+                Slider["SliderMain"]["SliderInput"].MouseButton1Down:Connect(function()
+                    SliderEnabled = true
+                end)
+
+                Slider["SliderMain"]["SliderFrame"].Size = UDim2.new(math.clamp((Default - Min) / (Max - Min), 0, 1), 0, 1, 0)
+                
+                if Precise then
+                    Slider["ValueText"].Text = string.format("%.03f", Default)
+                else
+                    Slider["ValueText"].Text = Default
+                end
+                
+                game:GetService("UserInputService").InputEnded:Connect(function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        SliderEnabled = false
+                    end
+                end)
+
+                local ReturnValue = 0
+
+                coroutine.wrap(function()
+                    game:GetService("RunService").RenderStepped:Connect(function()
+                        local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
+
+                        if SliderEnabled then
+                            local Percentage = math.clamp((Mouse.X - Slider["SliderMain"].AbsolutePosition.X) / Slider["SliderMain"].AbsoluteSize.X, 0, 1)
+                            local Value = ((Max - Min) * Percentage) + Min
+
+                            ReturnValue = Value
+
+                            game:GetService("TweenService"):Create(Slider["SliderMain"]["SliderFrame"], TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Size = UDim2.new(Percentage, 0, 1, 0)}):Play()
+
+                            if Precise then
+                                Slider["ValueText"].Text = string.format("%.03f", Value)
+                                pcall(Callback, Value)
+                            else
+                                Slider["ValueText"].Text = math.round(Value)
+                                pcall(Callback, math.round(Value))
+                            end
+                        end
+                    end)
+                end)()
+
+                function SLF:Get()
+                    return ReturnValue
+                end
+
+                function SLF:Set(Value)
+                    if Value == nil then
+                        Value = Min
+                    end
+                    
+                    local Percentage = math.clamp((Value - Min) / (Max - Min), 0, 1)
+                    local Value = ((Max - Min) * Percentage) + Min
+
+                    game:GetService("TweenService"):Create(Slider["SliderMain"]["SliderFrame"], TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Size = UDim2.new(Percentage, 0, 1, 0)}):Play()
+
+                    if Precise then
+                        Slider["ValueText"].Text = string.format("%.03f", Value)
+                        pcall(Callback, Value)
+                    else
+                        Slider["ValueText"].Text = math.round(Value)
+                        pcall(Callback, math.round(Value))
+                    end
+                end
+
+                function SLF:Tooltip(Text)
+                    Slider.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Slider.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return SLF
+            end
+
+            function SF:Dropdown(Name, Data, Callback)
+                local DDF = {Tag = "Dropdown"}
+
+                local CurrentData = {}
+                local CurrentValue = nil
+                local DropdownEnabled = false
+
+                local Dropdown = UI["Dropdown"]:Clone()
+                Dropdown.Parent = Section
+                Dropdown.Name = Name
+                Dropdown["DropdownText"].Text = Name
+                                
+                Dropdown["DropdownContainer"]:FindFirstChild("UIListLayout"):GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    Dropdown["DropdownContainer"].CanvasSize = UDim2.new(0, 0, 0, Dropdown["DropdownContainer"]:FindFirstChild("UIListLayout").AbsoluteContentSize.Y)
+                end)
+                    
+                local DDX = Dropdown.Size.X
+                local DDY = Dropdown.Size.Y
+
+                Dropdown["DropdownInteractable"].MouseButton1Click:Connect(function()
+                    DropdownEnabled = not DropdownEnabled
+
+                    if DropdownEnabled then
+                        game:GetService("TweenService"):Create(Dropdown, TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Size = UDim2.new(DDX.Scale, DDX.Offset, 0, 100)}):Play()
+                    end
+                    if not DropdownEnabled then
+                        game:GetService("TweenService"):Create(Dropdown, TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Size = UDim2.new(DDX.Scale, DDX.Offset, 0, 24)}):Play()
+                    end
+                end)
+
+                local function Setup(Data)
+                    for _, Value in next, Data do
+                        local Button = Instance.new("TextButton", Dropdown["DropdownContainer"])
+                        Button.BackgroundTransparency = 1
+                        Button.BorderSizePixel = 0
+                        Button.Font = Enum.Font["Gotham"]
+                        Button.Name = "DropdownOption"
+                        Button.Size = UDim2.new(1, 0, 0, 20)
+                        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        Button.TextSize = 10
+
+                        if type(Value) == "userdata" then
+                            Button.Text = Value.Name
+                        else
+                            Button.Text = tostring(Value)
+                        end
+
+                        Button.MouseButton1Click:Connect(function()
+                            pcall(Callback, Value)
+                            Dropdown["DropdownText"].Text = Name .. ": " .. Button.Text
+                            DropdownEnabled = false
+                            game:GetService("TweenService"):Create(Dropdown, TweenInfo.new(0.2, Enum.EasingStyle["Quint"], Enum.EasingDirection["Out"]), {Size = UDim2.new(DDX.Scale, DDX.Offset, 0, 24)}):Play()
+                        end)
+                    end
+                end
+
+                local function Clear()
+                    for _, Button in ipairs(Dropdown["DropdownContainer"]:GetChildren()) do
+                        if Button:IsA("TextButton") and Button.Name == "DropdownOption" then
+                            Button:Destroy()
+                        end
+                    end
+                end
+
+                for _, DataValue in ipairs(Data) do
+                    if type(DataValue) == "userdata" then
+                        CurrentData[DataValue.Name] = DataValue
+                    else
+                        CurrentData[DataValue] = DataValue
+                    end
+                end
+
+                Setup(CurrentData)
+
+                function DDF:Get()
+                    return CurrentValue
+                end
+
+                function DDF:Set(Value)
+                    CurrentValue = ((CurrentData[Value] ~= nil and CurrentData[Value]) or (table.find(CurrentData, Value) and Value))
+                    Dropdown["DropdownText"].Text = Name .. ": " .. tostring(((type(CurrentValue) == "userdata" and CurrentValue.Name) or (type(CurrentValue) == "string" and CurrentValue)))
+                    pcall(Callback, Value)
+                end
+
+                function DDF:Update(Data)
+                    if type(Data) ~= "table" then
+                        Data = {Data}
+                    end
+
+                    table.clear(CurrentData)
+
+                    Clear()
+                    
+                    for _, DataValue in ipairs(Data) do
+                        if type(DataValue) == "userdata" then
+                            CurrentData[DataValue.Name] = DataValue
+                        else
+                            CurrentData[DataValue] = DataValue
+                        end
+                    end
+    
+                    Setup(CurrentData)
+                end
+
+                function DDF:Tooltip(Text)
+                    Dropdown.MouseEnter:Connect(function()
+                        TooltipEnabled = true
+                        Tooltip(Text)
+                    end)
+
+                    Dropdown.MouseLeave:Connect(function()
+                        TooltipEnabled = false
+                        Tooltip(Text)
+                    end)
+                end
+
+                return DDF
+            end
+            
+            return SF
+        end
+        
+        return TF
+    end
+    
+    return IF
+end
+
+return Library
