@@ -281,35 +281,7 @@ function Library:Init(InitData)
                     InfoText.Text = ""
                 end
             end
-            local textButton = Instance.new("TextButton")
-textButton.Size = UDim2.new(0, 50, 0, 50)
-textButton.Position = UDim2.new(0.2, 0, 0.5, 0)
-textButton.AnchorPoint = Vector2.new(0.5, 0.5)
-textButton.BackgroundTransparency = 1
-textButton.Text = ""
-textButton.Parent = Reduisceen
-
-local imageLabel = Instance.new("ImageLabel")
-imageLabel.Size = UDim2.new(1, 0, 1, 0)
-imageLabel.Position = UDim2.new(0, 0, 0, 0)
-imageLabel.Image = "rbxassetid://UwU"
-imageLabel.Parent = textButton
-
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(1, 0, 1, 0)
-textLabel.Position = UDim2.new(0, 0, 0, 0)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "Close"
-textLabel.Parent = imageLabel
-
-textButton.MouseButton1Click:Connect(function()
-    if textLabel.Text == "Close" then
-        textLabel.Text = "Open"
-    else
-        textLabel.Text = "Close"
-    end
-    game.CoreGui["redui"]["MainSceen"].Visible = not game.CoreGui["redui"]["MainSceen"].Visible
-end)
+            
             function SF:Label(Text)
                 local LBF = {}
 
